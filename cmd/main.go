@@ -1,11 +1,18 @@
 package main
 
 import (
-	"log"
+	"flag"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
 func main() {
+	addr := flag.String("addr", ":8080", "HTTP network address")
+	flag.Parse()
+
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
 	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir("./static"))
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
@@ -13,7 +20,9 @@ func main() {
 	mux.HandleFunc("GET /view/{id}", viewSnip)
 	mux.HandleFunc("GET /create", createSnip)
 	mux.HandleFunc("POST /create", createSnipPost)
-	log.Print("starting server on port 8080")
-	err := http.ListenAndServe(":8080", mux)
-	log.Fatal(err)
+
+	logger.Info("starting server", "addr", *addr)
+	err := http.ListenAndServe(*addr, mux)
+	logger.Error(err.Error())
+	os.Exit(1)
 }
