@@ -1,0 +1,14 @@
+## Adjust the info below, remove this comment and rename the file to .config to allow the app to parse the settings
+
+{
+ "user":           "sqluser",
+ "password":       "sqlpass",
+ "protocol":       "tcp",
+ "remoteIPstring": "127.0.0.1",
+ "remotePort":     "3306",
+ "serverPort":     "8080",
+ "serverPortDesc": "HTTP network address",
+ "dbname":         "snip",
+ "attributes":     "parseTime=true&tls=skip-verify",
+ "description":    "MySQL data source name"
+}

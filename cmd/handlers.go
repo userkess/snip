@@ -1,31 +1,24 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
+	"snip/internal/models"
 	"strconv"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
 
-	files := []string{
-		"./html/base.tmpl",
-		"./html/nav.tmpl",
-		"./html/home.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
+	snips, err := app.snips.Latest()
 	if err != nil {
 		app.serverError(w, r, err)
 		return
 	}
-
-	err = ts.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
+	app.render(w, r, http.StatusOK, "home.tmpl", templateData{
+		Snips: snips,
+	})
 }
 
 func (app *application) viewSnip(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +27,18 @@ func (app *application) viewSnip(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	fmt.Fprint(w, "Display snip id ", id)
+	snip, err := app.snips.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			http.NotFound(w, r)
+		} else {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+	app.render(w, r, http.StatusOK, "view.tmpl", templateData{
+		Snip: snip,
+	})
 }
 
 func (app *application) createSnip(w http.ResponseWriter, r *http.Request) {
@@ -42,5 +46,13 @@ func (app *application) createSnip(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) createSnipPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Save a new Snip")
+	title := "0 snail"
+	content := "0 snail\nClimb Mount Fuji,\n,But slowly, slowly!\n\n- Kobayashi Issa"
+	expires := 7
+	id, err := app.snips.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+	http.Redirect(w, r, fmt.Sprintf("/view/%d", id), http.StatusSeeOther)
 }
