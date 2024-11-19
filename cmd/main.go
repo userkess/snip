@@ -19,15 +19,13 @@ type application struct {
 }
 
 func main() {
-	// create mySQL Pool
 
-	// pull SQL settings from .config
+	// get server settings from .config
 	cfg := GetConfig()
 
-	dsn := flag.String(cfg.Dialect(), cfg.ConnectionInfo(), cfg.Description)
-	port := flag.String("port", ":"+cfg.ServerPort, cfg.ServerPortDesc)
-
-	flag.Parse()
+	// create mySQL Pool
+	dsn := flag.String(cfg.DialectInfo(), cfg.ConnectionInfo(), cfg.SQLDescription)
+	port := flag.String("port", ":"+cfg.ServerHTTPPort, cfg.ServerPortDesc)
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
