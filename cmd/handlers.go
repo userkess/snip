@@ -9,16 +9,16 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Server", "Go")
-
 	snips, err := app.snips.Latest()
 	if err != nil {
 		app.serverError(w, r, err)
 		return
 	}
-	app.render(w, r, http.StatusOK, "home.tmpl", templateData{
-		Snips: snips,
-	})
+
+	data := app.newTemplateData(r)
+	data.Snips = snips
+
+	app.render(w, r, http.StatusOK, "home.tmpl", data)
 }
 
 func (app *application) viewSnip(w http.ResponseWriter, r *http.Request) {
@@ -36,9 +36,9 @@ func (app *application) viewSnip(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	app.render(w, r, http.StatusOK, "view.tmpl", templateData{
-		Snip: snip,
-	})
+	data := app.newTemplateData(r)
+	data.Snip = snip
+	app.render(w, r, http.StatusOK, "view.tmpl", data)
 }
 
 func (app *application) createSnip(w http.ResponseWriter, r *http.Request) {

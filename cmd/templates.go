@@ -4,11 +4,21 @@ import (
 	"html/template"
 	"path/filepath"
 	"snip/internal/models"
+	"time"
 )
 
 type templateData struct {
-	Snip  models.Snip
-	Snips []models.Snip
+	CurrentYear int
+	Snip        models.Snip
+	Snips       []models.Snip
+}
+
+func humanDate(t time.Time) string {
+	return t.Format("Jan 02 2006 at 03:04 PM")
+}
+
+var functions = template.FuncMap{
+	"humanDate": humanDate,
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
@@ -23,7 +33,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	for _, page := range pages {
 		name := filepath.Base(page)
 		// parse base template
-		ts, err := template.ParseFiles("./html/base.tmpl")
+		ts, err := template.New(name).Funcs(functions).ParseFiles("./html/base.tmpl")
 		if err != nil {
 			return nil, err
 		}
